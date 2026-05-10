@@ -1,0 +1,38 @@
+tasks:
+  - name: payment-receipt
+    sketch: "CARD:{□: credit_card} EXP:{□: expiration_date} CVV:{□: cvv} AMT:{□: currency_amount}"
+    positive:
+      - "CARD:4111 1111 1111 1111 EXP:04/26 CVV:123 AMT:$19.95"
+      - "CARD:5555-4444-3333-2222 EXP:11/27 CVV:1234 AMT:$250.00"
+    negative:
+      - "CARD:4111 1111 1111 1111 EXP:13/26 CVV:123 AMT:$19.95"
+      - "CARD:5555-4444-3333-2222 EXP:11/27 CVV:12 AMT:$250.00"
+
+  - name: server-log
+    sketch: "{□: iso_date} {□: ipv4_address} \"{□: http_method} {□: url_path}\""
+    positive:
+      - '2026-04-27 192.168.0.1 "GET /api/v1/orders"'
+      - '2026-04-27 10.0.0.7 "POST /checkout/pay"'
+    negative:
+      - '2026-04-27 not-an-ip "GET /api/v1/orders"'
+      - '2026-04-27 192.168.0.1 "BLAH /api/v1/orders"'
+
+  - name: ambiguous-split
+    sketch: "{□: alpha}{□: integer}"
+    positive:
+      - "AB123"
+      - "CD456"
+    negative:
+      - "123AB"
+      - "ABXYZ"
+      - "AB_123"
+
+  - name: product-code
+    sketch: "{□: product_code}"
+    positive:
+      - "A12"
+      - "AB12"
+    negative:
+      - "A13"
+      - "ACD12"
+      - "B12"

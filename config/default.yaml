@@ -1,0 +1,188 @@
+app:
+  name: ReSketch
+
+matching:
+  mode: fullmatch
+
+llm:
+  model: gpt-5-mini
+  temperature: 1.0
+  timeout_seconds: 30.0
+  max_retries: 2
+  max_candidates: 12
+  missing_confidence: 0.5
+  response_format:
+    type: json_object
+  system_prompt: |
+    You are a program-synthesis component retrieval strategy for ReSketch.
+    Return only JSON. Produce Python-compatible regular expressions that can
+    serve as reusable components for the requested semantic type.
+  user_prompt_template: |
+    Retrieve regex components for one typed sketch hole.
+
+    Semantic type: {hole_type}
+    Full sketch: {sketch}
+    Global positive examples: {global_positive_examples}
+    Global negative examples: {global_negative_examples}
+    Inferred/explicit hard local positive examples for this hole: {hole_positive_examples}
+    Explicit hard local negative examples for this hole: {hole_negative_examples}
+    Ambiguous soft local positive examples for this hole: {hole_soft_positive_examples}
+    Decomposition diagnostics: {hole_diagnostics}
+    Maximum candidates: {max_candidates}
+
+    Return JSON with this exact shape:
+    {{
+      "candidates": [
+        {{
+          "regex": "...",
+          "type": "{hole_type}",
+          "description": "...",
+          "confidence": 0.0,
+          "source_id": "llm",
+          "examples": {{
+            "positive": ["..."],
+            "negative": ["..."]
+          }}
+        }}
+      ]
+    }}
+
+retrieval:
+  provider: llm
+  fixture_path: fixtures/candidates.yaml
+  db_path: fixtures/candidates.sqlite
+  cache_enabled: true
+  cache_path: .resketch_cache/llm_candidates.json
+  deduplicate: true
+
+decomposition:
+  enabled: true
+  mode: hard-and-soft
+  allow_empty_hole_examples: false
+  max_soft_examples_per_hole: 8
+  max_assignments_per_example: 64
+  max_hole_capture_length: 128
+  max_repeat_unroll: 16
+  capture_policies:
+    - lazy
+    - greedy
+
+synthesis:
+  beam_size: 8
+  max_hole_options: 24
+  max_fragment_pairs: 16
+  max_refinement_variants: 12
+  max_candidate_length: 512
+  strategy_order:
+    - direct_reuse
+    - component_generalization
+    - fragment_recombination
+    - parameterized_refinement
+  scoring:
+    semantic_fit:
+      positive_match: 10.0
+      negative_reject: 10.0
+      hard_local_match: 3.0
+      hard_local_reject: 3.0
+      soft_positive_match: 2.0
+      tuple_negative_probe_reject: 2.0
+    source_confidence:
+      weight: 4.0
+    syntactic_complexity_cost:
+      literal: 1.0
+      dot: 3.0
+      category: 1.0
+      char_class: 1.5
+      concat: 0.25
+      alt: 1.25
+      repeat: 0.75
+      anchor: 0.5
+      raw_regex: 2.5
+      wildcard_penalty: 8.0
+      alternation_option_penalty: 0.25
+      length_penalty: 0.01
+    strategy_penalty:
+      direct_reuse: 0.0
+      component_generalization: 0.25
+      fragment_recombination: 0.5
+      parameterized_refinement: 1.0
+  quantifier_refinement:
+    lower_delta: 1
+    upper_delta: 2
+  search:
+    max_ast_size: 5
+    max_nodes_per_size: 64
+    max_behavior_classes: 128
+    max_generated_candidates: 2000
+    max_seconds_per_hole: 2.0
+    max_constraint_probes_per_hole: 32
+    max_example_literals: 8
+    example_literal_max_length: 32
+    constructors:
+      - concat
+      - alt
+      - repeat
+      - optional
+    allowed_repeat_bounds:
+      - [0, 1]
+      - [0, null]
+      - [1, null]
+      - [2, 4]
+      - [3, 4]
+    separator_chars: " -_./:@"
+    allow_raw_regex: false
+    behavioral_dedup: true
+  refinement:
+    character_class_candidates:
+      - "\\d"
+      - "[A-Za-z]"
+      - "[A-Za-z0-9]"
+      - "\\w"
+      - "\\s"
+    enable_anchor_toggle: true
+    enable_separator_insertion: true
+    enable_optional_literal: true
+    max_variants_per_operator: 16
+  global_pruning:
+    enabled: true
+    unknown_hole_pattern: ".{0,128}"
+    max_partial_beams: 32
+  automata:
+    enabled: true
+    alphabet_policy: ascii_examples
+    max_unknown_hole_length: 128
+    max_states: 4096
+    fail_open_on_unsupported: true
+  outcome_logging:
+    enabled: false
+    path: .resketch_cache/outcomes.jsonl
+
+cegis:
+  interactive: true
+  max_rounds: 5
+  accept_tokens:
+    - "y"
+    - "yes"
+    - "accept"
+  reject_tokens:
+    - "n"
+    - "no"
+    - "reject"
+  quit_tokens:
+    - "q"
+    - "quit"
+    - "exit"
+  positive_tokens:
+    - "p"
+    - "pos"
+    - "positive"
+  negative_tokens:
+    - "n"
+    - "neg"
+    - "negative"
+  prompt_accept: "Accept this regex? [y/n/q]"
+  prompt_counterexample: "Enter a counterexample string (empty to stop adding examples)"
+  prompt_counterexample_kind: "Is this positive or negative? [pos/neg]"
+
+evaluation:
+  benchmark_path: benchmarks/tiny.yaml

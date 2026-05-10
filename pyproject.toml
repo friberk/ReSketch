@@ -1,0 +1,53 @@
+[project]
+name = "resketch"
+version = "0.1.0"
+description = "Corpus-guided semantic regex synthesis with pluggable candidate retrieval strategies."
+authors = [{ name = "Berk Cakar" }]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "automata-lib>=9.2,<10.0",
+    "litellm>=1.0,<2.0",
+    "pydantic>=2.7,<3.0",
+    "pydantic-settings>=2.2,<3.0",
+    "pyyaml>=6.0,<7.0",
+    "rich>=13.7,<15.0",
+    "typer>=0.12,<1.0",
+]
+
+[project.scripts]
+resketch = "resketch.cli:main"
+
+[tool.poetry]
+packages = [{ include = "resketch" }]
+
+[tool.poetry.group.dev.dependencies]
+mypy = ">=1.10,<2.0"
+pytest = ">=8.2,<9.0"
+pytest-mock = ">=3.14,<4.0"
+ruff = ">=0.5,<1.0"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

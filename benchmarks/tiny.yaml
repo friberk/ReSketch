@@ -1,0 +1,26 @@
+tasks:
+  - name: email-address
+    sketch: "{□: email_address}"
+    positive:
+      - "john.doe@example.com"
+      - "a.b+tag@sub.example.org"
+    negative:
+      - "not an email"
+      - "missing-at.example.com"
+  - name: cvv-after-label
+    sketch: "CVV:{□: cvv}"
+    positive:
+      - "CVV:123"
+      - "CVV:1234"
+    negative:
+      - "CVV:12"
+      - "CVV:abcd"
+  - name: signed-integer
+    sketch: "{□: integer}"
+    positive:
+      - "-42"
+      - "+7"
+      - "0"
+    negative:
+      - "3.14"
+      - "abc"

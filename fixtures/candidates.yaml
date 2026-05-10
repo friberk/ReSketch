@@ -1,0 +1,91 @@
+types:
+  digit:
+    - regex: "\\d"
+      type: digit
+      description: "A single decimal digit."
+      confidence: 0.95
+      source_id: fixture-digit
+      examples:
+        positive:
+          - "1"
+        negative:
+          - "a"
+  credit_card:
+    - regex: "(?:\\d[ -]*?){13,16}"
+      type: credit_card
+      description: "Common payment card digit sequence with optional spaces or dashes."
+      confidence: 0.82
+      source_id: fixture-credit-card-flex
+      examples:
+        positive:
+          - "4111 1111 1111 1111"
+          - "4111111111111111"
+        negative:
+          - "abc"
+    - regex: "\\d{16}"
+      type: credit_card
+      description: "Sixteen contiguous digits."
+      confidence: 0.65
+      source_id: fixture-credit-card-16
+      examples:
+        positive:
+          - "4111111111111111"
+        negative:
+          - "4111-1111-1111-1111"
+  cvv:
+    - regex: "\\d{3,4}"
+      type: cvv
+      description: "Three or four digit card verification value."
+      confidence: 0.9
+      source_id: fixture-cvv
+      examples:
+        positive:
+          - "123"
+          - "1234"
+        negative:
+          - "12"
+  email_address:
+    - regex: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+      type: email_address
+      description: "Conventional email address shape."
+      confidence: 0.88
+      source_id: fixture-email-address
+      examples:
+        positive:
+          - "john.doe@example.com"
+        negative:
+          - "not an email"
+  integer:
+    - regex: "[+-]?\\d+"
+      type: integer
+      description: "Signed or unsigned integer."
+      confidence: 0.86
+      source_id: fixture-integer
+      examples:
+        positive:
+          - "-42"
+          - "17"
+        negative:
+          - "3.14"
+  year:
+    - regex: "(?:19|20)\\d{2}"
+      type: year
+      description: "Four-digit year in the 1900s or 2000s."
+      confidence: 0.76
+      source_id: fixture-year
+      examples:
+        positive:
+          - "2026"
+        negative:
+          - "3026"
+  ipv4_address:
+    - regex: "(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)"
+      type: ipv4_address
+      description: "IPv4 address with octet range checks."
+      confidence: 0.84
+      source_id: fixture-ipv4
+      examples:
+        positive:
+          - "192.168.0.1"
+        negative:
+          - "999.999.999.999"
